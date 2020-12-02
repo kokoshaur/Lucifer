@@ -56,18 +56,18 @@ public:
 private:	
 	void cryptoBlock(vector<char>& block)	//на основе сетей Фейстеля
 	{
-		vector<char> oldBlock = block;
 		if (isCrypto)
 		{
+			vector<char> oldBlock = block;
 			forceKey(block);
 			sandwith(block, isCrypto);
+			mda(oldBlock, block);
 		}
 		else
 		{
 			sandwith(block, isCrypto);
 			forceKey(block);
 		}
-		//mda(oldBlock, block);
 	}
 
 	void forceKey(vector<char>& block)	//сеть Фейстеля

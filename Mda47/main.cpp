@@ -14,8 +14,8 @@ int main() {
 		key[i] = i * 100;
 	}
 
-	//Resampler file(key.size(), "Resample\\in.txt", "Resample\\out.txt", "Resample\\decrypto.txt", TXT);
-	Resampler file(key.size(), "Resample\\in.bmp", "Resample\\out.bmp", "Resample\\decrypto.bmp", BMP);
+	Resampler file(key.size(), "Resample\\in.txt", "Resample\\out.txt", "Resample\\decrypto.txt", TXT);
+	//Resampler file(key.size(), "Resample\\in.bmp", "Resample\\out.bmp", "Resample\\decrypto.bmp", BMP);
 	Crypto crypto(&file, key,  16);
 
 	crypto.mod(true);
