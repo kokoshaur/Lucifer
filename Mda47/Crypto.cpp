@@ -1,6 +1,8 @@
 #include "Resampler.cpp"
 #include <algorithm>
 #include <math.h>
+#include <iostream>
+#include <fstream>
 #pragma once
 
 class Crypto
@@ -13,12 +15,15 @@ private:
 	
 	Resampler* file;
 
+	std::ofstream out;          // поток для записи
 
 	bool isCrypto;
 
 public:
 	Crypto(Resampler* resampler, vector<char>& key,  int R = -1)
 	{
+		out.open("Resample\\avtocor.txt"); // окрываем файл для записи
+		
 		file = resampler;
 
 		if (R < 0)
@@ -173,34 +178,69 @@ private:
 
 	void mda(vector<char> oldB, vector<char> newB)	//Анализы (выводим по первому байту из каждого блока, так как блок слишком большой и экран засирается)
 	{
-		vector<int> aga(8);
+		avtocor(newB);
+		
+		vector<int> aga(oldB.size()*8);
 		int koef = 0;
 		int numOfOne = 0;
-		
-		for (int i = 0; i < 8; i++) 
-		{
-			aga[i] = ((oldB[0] & 0x80) ? 1 : 0);
-			cout << aga[i] << " ";
-			oldB[0] <<= 1;
-		}
-		cout << endl;
-		for (int i = 0; i < 8; i++)
-		{
-			if (aga[i] != ((newB[0] & 0x80) ? 1 : 0))
-			{
-				cout << "\x1b[31m" << ((newB[0] & 0x80) ? '1' : '0') << "\x1b[0m" << " ";
-				koef++;
-			}
-			else
-				cout << ((newB[0] & 0x80) ? '1' : '0') << " ";
 
-			if ((newB[0] & 0x80))
-				numOfOne++;
-			
-			newB[0] <<= 1;
+		int dushnoVichislat = 0;
+		for (int q = 0; q < oldB.size(); q++)
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				aga[dushnoVichislat] = ((oldB[q] & 0x80) ? 1 : 0);
+				cout << aga[dushnoVichislat] << " ";
+				oldB[q] <<= 1;
+				dushnoVichislat++;
+			}
 		}
 		cout << endl;
-		cout << "Коэф схожети: " << (double)koef/8 << endl;
-		cout << "Количество нулей и единиц: " << 8 - numOfOne << " к " << numOfOne << endl << endl;
+
+		for (int q = 0; q < oldB.size(); q++)
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				if (aga[i] != ((newB[q] & 0x80) ? 1 : 0))
+				{
+					cout << "\x1b[31m" << ((newB[q] & 0x80) ? '1' : '0') << "\x1b[0m" << " ";
+					koef++;
+				}
+				else
+					cout << ((newB[q] & 0x80) ? '1' : '0') << " ";
+
+				if ((newB[q] & 0x80))
+					numOfOne++;
+
+				newB[q] <<= 1;
+			}
+		}
+	
+		cout << endl;
+		cout << "Количество нулей и единиц: " << (oldB.size() * 8) - numOfOne << " к " << numOfOne << endl << endl;
+	}
+
+	void avtocor(vector<char> block)
+	{
+		for (int i = 0; i < block.size(); i++)
+		{
+			double werh = 0, niz = 0;
+			for (int k = 0; k < r; k++)
+				werh += (norm(block[k]) * norm(block[(int)((k + i) % r)]));
+
+			for (int k = 0; k < r; k++)
+				niz += (norm(block[k]) * norm(block[k]));
+
+			double q = (double)(werh / niz);
+
+			out << (double)q << " " << (int)i << endl;		//Вот тут лучше сделать какое нибудь нормирование q (ну чтобы оно не становилось отрицательным)
+		}
+
+		
+	}
+
+	char norm(char subj)
+	{
+		return (char)(subj * 2 - 1);
 	}
 };
